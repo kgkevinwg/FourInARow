@@ -10,9 +10,9 @@ public class ActionHelper implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
-		Main.buttonClicked = true;
+		
 		if(e.getSource() == Main.btnInsert1)
-		{
+		{	
 			Main.lastButtonClick = 0;
 		}
 		else if(e.getSource() == Main.btnInsert2)
@@ -39,6 +39,7 @@ public class ActionHelper implements ActionListener{
 		{
 			Main.lastButtonClick = 6;
 		}
+		Main.buttonClicked = true;
 		
 	}
 

@@ -12,14 +12,14 @@ import javax.swing.JPanel;
 
 public class Tile extends JPanel{
 	
-	int x,y,status;
+	int xc,yc,status;
 	String image;
 	BufferedImage bi;
-	
+	JLabel picLabel;
 
 	public Tile(int x, int y) {
-		this.x = x;
-		this.y = y;
+		this.xc = x;
+		this.yc = y;
 		this.image = "grb.png";
 		this.status = 0;
 		this.setLayout(new FlowLayout());
@@ -41,10 +41,67 @@ public class Tile extends JPanel{
 		Image img = imageIcon.getImage();
 		Image newimg = img.getScaledInstance(50, 50,  java.awt.Image.SCALE_SMOOTH);
 		imageIcon = new ImageIcon(newimg);
-		JLabel picLabel = new JLabel(imageIcon);
+		picLabel = new JLabel(imageIcon);
 		add(picLabel);
 	}
 	
+	public void reDraw(String imgStr)
+	{
+		ImageIcon imageIcon = new ImageIcon(imgStr); 
+		Image img = imageIcon.getImage();
+		Image newimg = img.getScaledInstance(50, 50,  java.awt.Image.SCALE_SMOOTH);
+		imageIcon = new ImageIcon(newimg);
+		picLabel.setIcon(imageIcon);
+	}
+
+	public int getXc() {
+		return xc;
+	}
+
+	public void setXc(int xc) {
+		this.xc = xc;
+	}
+
+	public int getYc() {
+		return yc;
+	}
+
+	public void setYc(int yc) {
+		this.yc = yc;
+	}
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
+	}
+
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
+	}
+
+	public BufferedImage getBi() {
+		return bi;
+	}
+
+	public void setBi(BufferedImage bi) {
+		this.bi = bi;
+	}
+
+	public JLabel getPicLabel() {
+		return picLabel;
+	}
+
+	public void setPicLabel(JLabel picLabel) {
+		this.picLabel = picLabel;
+	}
+
 	
 
 }

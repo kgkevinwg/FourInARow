@@ -8,10 +8,15 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.swing.*;
 
 public class Main extends JFrame{
+	
+	final int CHKWINNINGMOVE = 1;
+	final int CHKPROGRESSMOVE = 2;
+	
 	
 
 	Vector<Integer> vecChipStatus;
@@ -24,7 +29,7 @@ public class Main extends JFrame{
 	static public JButton btnInsert1,btnInsert2,btnInsert3,btnInsert4,btnInsert5,btnInsert6,btnInsert7;
 	
 	JLabel playerTurn;
-	
+	int turnNumber = 1;
 	ActionHelper actionHelper = new ActionHelper();
 	
 	boolean isFinished = false;
@@ -40,15 +45,28 @@ public class Main extends JFrame{
 	
 	private void placeChip()
 	{
+		
 		int val = vecChipStatus.get(lastButtonClick);
-		if(val < 7)
+		System.out.println("val: "+val);
+		if(val < 6)
 		{
+			System.out.println("x: "+lastButtonClick+"Y: "+val);
+			tiles[lastButtonClick][val].setStatus(turnNumber);
+			switch(turnNumber)
+			{
+			case 1:
+				tiles[lastButtonClick][val].reDraw("rb.png");break;
+			case 2:
+				tiles[lastButtonClick][val].reDraw("bb.png");break;
+			}
 			
 			
 			val++;
 			vecChipStatus.set(lastButtonClick, val);
 			
 		}
+		turnNumber++;
+		if(turnNumber == 3)turnNumber = 1;
 	}
 	
 	
@@ -57,21 +75,227 @@ public class Main extends JFrame{
 		
 		while(!isFinished)
 		{
-			while(!buttonClicked) {}
-			placeChip();
+			System.out.println("TurnNumber: "+turnNumber);
+			switch(turnNumber)
+			{
+			case 1: playerTurn.setText("Player 1's turn!");	playerTurn.setForeground(Color.red);break;
+			case 2: playerTurn.setText("Player 2's turn!");	playerTurn.setForeground(Color.blue);break;
+
+			
+			}
+			if(turnNumber ==1)
+			{
+				while(!buttonClicked) {	try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}		}
+			}
+			
+			if(turnNumber == 1)
+			{
+				buttonClicked = false;
+				placeChip();
+				System.out.println("player place chip, now turn number is "+turnNumber);
+				
+			}
+			else
+			{
+				computerMove();
+				turnNumber = 1;
+			}
 			
 			
 		}
 		
 		
+		
 	}
 
+
+	boolean computerMoveFlag = false;
+	private void computerMove() {
+		// TODO Auto-generated method stub
+		computerMoveFlag = false;
+		System.out.println("computer is thinking...");
+		
+		
+		for(int a=0;a<6;a++)
+		{
+			for(int b=0;b<7;b++)
+			{
+				checkMove(2,b,a);
+				if(!computerMoveFlag)
+					{
+					System.out.println("Tyring to block openent");
+					checkMove(1,b,a);
+					}
+				if(!computerMoveFlag)makeRandomMove();
+				
+			}
+		}
+		
+		
+		
+	}
+	
+	private void checkMove(int turn,int x, int y)
+	{
+		
+		checkLeftDiagonal(turn,x,y,CHKWINNINGMOVE);
+		if(!computerMoveFlag)checkStraight(turn,x,y,CHKWINNINGMOVE);
+		if(!computerMoveFlag)checkRightDiagonal(turn,x,y,CHKWINNINGMOVE);
+		if(!computerMoveFlag)checkHorizontalLeft(turn,x,y,CHKWINNINGMOVE);
+		if(!computerMoveFlag)checkHorizontalRight(turn,x,y,CHKWINNINGMOVE);
+		if(!computerMoveFlag)checkLeftDiagonal(turn,x,y,CHKPROGRESSMOVE);
+		if(!computerMoveFlag)checkStraight(turn,x,y,CHKPROGRESSMOVE);
+		if(!computerMoveFlag)checkRightDiagonal(turn,x,y,CHKPROGRESSMOVE);
+		if(!computerMoveFlag)checkHorizontalLeft(turn,x,y,CHKPROGRESSMOVE);
+		if(!computerMoveFlag)checkHorizontalRight(turn,x,y,CHKPROGRESSMOVE);
+		
+		
+		
+	}
+	
+	private void makeRandomMove()
+	{
+		System.out.println("Computer is tired, making random move");
+		int randX = ThreadLocalRandom.current().nextInt(0,6);
+		makeWinningMove(2,randX,vecChipStatus.get(randX));
+	}
+	
+	private void makeWinningMove(int turn,int x, int y)
+	{
+		int val = vecChipStatus.get(x);
+		val++;
+		vecChipStatus.set(x, val);
+		System.out.println("Computer is placing chip on X: "+x+"Y: "+y);
+		tiles[x][y].setStatus(turn);
+		tiles[x][y].reDraw("bb.png");
+		computerMoveFlag = true;
+		return;
+	}
+	
+	private void checkLeftDiagonal(int turn,int x, int y,int mode)
+	{
+		if(x>=2 && y<=2)
+		{
+			if(mode == CHKWINNINGMOVE)
+			{
+				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y+1].getStatus() == turn && tiles[x-2][y+2].getStatus() == turn)
+				{
+					makeWinningMove(2,x-3,y+3);
+				}
+			}
+			else
+			{
+				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y+1].getStatus() == turn)
+				{
+					makeWinningMove(2,x-2,y+2);
+				}
+			}
+			
+		}
+		
+	}
+	
+	private void checkStraight(int turn,int x, int y,int mode)
+	{
+		if(y<=2)
+		{
+			if(mode == CHKWINNINGMOVE)
+			{
+				if(tiles[x][y].getStatus() == turn &&  tiles[x][y+1].getStatus() == turn && tiles[x][y+2].getStatus() == turn)
+				{
+					makeWinningMove(2,x,y+3);
+				}
+			}
+			else
+			{
+				if(tiles[x][y].getStatus() == turn &&  tiles[x][y+1].getStatus() == turn )
+				{
+					makeWinningMove(2,x,y+2);
+				}
+			}
+			
+		}
+	}
+	
+	private void checkRightDiagonal(int turn,int x, int y,int mode)
+	{
+		if( x <=3 &&y<=3)
+		{
+			if(mode == CHKWINNINGMOVE)
+			{
+				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y+1].getStatus() == turn && tiles[x+2][y+2].getStatus() == turn)
+				{
+					makeWinningMove(2,x+3,y+3);
+				}
+			}
+			else
+			{
+				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y+1].getStatus() == turn)
+				{
+					makeWinningMove(2,x+2,y+2);
+				}
+			}
+			
+		}
+	}
+	
+	private void checkHorizontalLeft(int turn,int x, int y, int mode)
+	{
+		if( x >=3)
+		{
+			if(mode == CHKWINNINGMOVE)
+			{
+				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y].getStatus() == turn && tiles[x-2][y].getStatus() == turn)
+				{
+					makeWinningMove(2,x-3,y);
+				}
+			}
+			else
+			{
+				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y].getStatus() == turn)
+				{
+					makeWinningMove(2,x-2,y);
+				}
+			}
+			
+		}
+	}
+	
+	private void checkHorizontalRight(int turn,int x, int y, int mode)
+	{
+		if( y<=2)
+		{
+			if(mode == CHKWINNINGMOVE)
+			{
+				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y].getStatus() == turn && tiles[x+2][y].getStatus() == turn)
+				{
+					makeWinningMove(2,x+3,y);
+				}
+			}
+			else
+			{
+				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y].getStatus() == turn)
+				{
+					makeWinningMove(2,x+2,y);
+				}
+			}
+			
+		}
+	}
+	
+	
 
 	private void initializeTiles()
 	{
 
+		//Vector<Tile>vecTile = new Vector<>();
 		
-		for(int a = 0;a<6;a++)
+		for(int a = 5;a>=0;a--)
 		{
 			for(int b = 0;b<7;b++)
 			{
@@ -87,6 +311,8 @@ public class Main extends JFrame{
 				tiles[b][a] = tile;
 				tilePanel.add(tiles[b][a]);
 				
+				
+			
 				
 				
 			}
@@ -125,6 +351,9 @@ public class Main extends JFrame{
 		buttonPanel.add(btnInsert2);		
 		buttonPanel.add(btnInsert3);		
 		buttonPanel.add(btnInsert4);
+		buttonPanel.add(btnInsert5);
+		buttonPanel.add(btnInsert6);
+		buttonPanel.add(btnInsert7);
 		
 		playerTurn = new JLabel("Player 1's turn!");
 		playerTurn.setForeground(Color.red);
@@ -161,6 +390,7 @@ public class Main extends JFrame{
 		setSize(new Dimension(750,500));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
+		
 		
 	}
 
