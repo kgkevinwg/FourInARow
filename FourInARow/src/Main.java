@@ -63,6 +63,7 @@ public class Main extends JFrame{
 			
 			val++;
 			vecChipStatus.set(lastButtonClick, val);
+			System.out.println("Chip status on column "+lastButtonClick+": "+val);
 			
 		}
 		turnNumber++;
@@ -120,39 +121,107 @@ public class Main extends JFrame{
 		computerMoveFlag = false;
 		System.out.println("computer is thinking...");
 		
-		
+		outerloop:
 		for(int a=0;a<6;a++)
 		{
 			for(int b=0;b<7;b++)
 			{
-				checkMove(2,b,a);
-				if(!computerMoveFlag)
-					{
-					System.out.println("Tyring to block openent");
-					checkMove(1,b,a);
-					}
-				if(!computerMoveFlag)makeRandomMove();
 				
+				checkMove(2,b,a,1);
+				if(computerMoveFlag)break outerloop;
 			}
 		}
+		outerloop2:
+		if(!computerMoveFlag)
+		{
+			System.out.println("Tyring to block openent");
+			for(int a=0;a<6;a++)
+			{
+				for(int b=0;b<7;b++)
+				{
+					checkMove(1,b,a,1);
+					if(computerMoveFlag)break outerloop2;
+				}
+			}
+		}
+		
+		if(computerMoveFlag)System.out.println("Trying to make a Smart Move");
+		
+		outerloop3:
+			if(!computerMoveFlag)
+			{
+				for(int a=0;a<6;a++)
+				{
+					for(int b=0;b<7;b++)
+					{
+						
+						checkMove(2,b,a,2);
+						if(computerMoveFlag)break outerloop3;
+					}
+				}
+			}
+			
+			outerloop4:
+			if(!computerMoveFlag)
+			{
+				System.out.println("Tyring to block openent");
+				for(int a=0;a<6;a++)
+				{
+					for(int b=0;b<7;b++)
+					{
+						checkMove(1,b,a,2);
+						if(computerMoveFlag)break outerloop4;
+					}
+				}
+			}
+		
+		
+		if(!computerMoveFlag)makeRandomMove();
 		
 		
 		
 	}
 	
-	private void checkMove(int turn,int x, int y)
+	private void checkMove(int turn,int x, int y,int mode)
 	{
+		int antiTurn = 0;
+		switch(turn)
+		{
+		case 1: antiTurn =2;break;
+		case 2: antiTurn = 1;break;
+		}
 		
-		checkLeftDiagonal(turn,x,y,CHKWINNINGMOVE);
-		if(!computerMoveFlag)checkStraight(turn,x,y,CHKWINNINGMOVE);
-		if(!computerMoveFlag)checkRightDiagonal(turn,x,y,CHKWINNINGMOVE);
-		if(!computerMoveFlag)checkHorizontalLeft(turn,x,y,CHKWINNINGMOVE);
-		if(!computerMoveFlag)checkHorizontalRight(turn,x,y,CHKWINNINGMOVE);
-		if(!computerMoveFlag)checkLeftDiagonal(turn,x,y,CHKPROGRESSMOVE);
-		if(!computerMoveFlag)checkStraight(turn,x,y,CHKPROGRESSMOVE);
-		if(!computerMoveFlag)checkRightDiagonal(turn,x,y,CHKPROGRESSMOVE);
-		if(!computerMoveFlag)checkHorizontalLeft(turn,x,y,CHKPROGRESSMOVE);
-		if(!computerMoveFlag)checkHorizontalRight(turn,x,y,CHKPROGRESSMOVE);
+		switch(mode)
+		{
+		case 1:
+			System.out.println("Checking for Left Diagonal move on X: "+x+" Y: "+y);
+			checkLeftDiagonal(turn,antiTurn,x,y,CHKWINNINGMOVE);
+			System.out.println("Checking for Straight move on X: "+x+" Y: "+y);
+			if(!computerMoveFlag)checkStraight(turn,antiTurn,x,y,CHKWINNINGMOVE);
+			System.out.println("Checking for Right Diagonal move on X: "+x+" Y: "+y);
+			if(!computerMoveFlag)checkRightDiagonal(turn,antiTurn,x,y,CHKWINNINGMOVE);
+			System.out.println("Checking for Horizontal Left move on X: "+x+" Y: "+y);
+			if(!computerMoveFlag)checkHorizontalLeft(turn,antiTurn,x,y,CHKWINNINGMOVE);
+			System.out.println("Checking for Horizontal Right move on X: "+x+" Y: "+y);
+			if(!computerMoveFlag)checkHorizontalRight(turn,antiTurn,x,y,CHKWINNINGMOVE);
+			System.out.println("Checking for Left Diagonal move on X: "+x+" Y: "+y);
+			break;
+		case 2:
+			checkLeftDiagonal(turn,antiTurn,x,y,CHKPROGRESSMOVE);
+			System.out.println("Checking for Straight move on X: "+x+" Y: "+y);
+			if(!computerMoveFlag)checkStraight(turn,antiTurn,x,y,CHKPROGRESSMOVE);
+			System.out.println("Checking for Right Diagonal move on X: "+x+" Y: "+y);
+			if(!computerMoveFlag)checkRightDiagonal(turn,antiTurn,x,y,CHKPROGRESSMOVE);
+			System.out.println("Checking for Horziontal Left move on X: "+x+" Y: "+y);
+			if(!computerMoveFlag)checkHorizontalLeft(turn,antiTurn,x,y,CHKPROGRESSMOVE);
+			System.out.println("Checking for Horizontal Right move on X: "+x+" Y: "+y);
+			if(!computerMoveFlag)checkHorizontalRight(turn,antiTurn,x,y,CHKPROGRESSMOVE);
+			break;
+			
+		}
+		
+		
+		
 		
 		
 		
@@ -162,37 +231,41 @@ public class Main extends JFrame{
 	{
 		System.out.println("Computer is tired, making random move");
 		int randX = ThreadLocalRandom.current().nextInt(0,6);
-		makeWinningMove(2,randX,vecChipStatus.get(randX));
+		makeWinningMove(2,randX,vecChipStatus.get(randX),false);
 	}
 	
-	private void makeWinningMove(int turn,int x, int y)
+	private void makeWinningMove(int turn,int x, int y, boolean isWinning)
 	{
 		int val = vecChipStatus.get(x);
+		System.out.println("Computer is placing chip on X: "+x+"Y: "+y);
+		tiles[x][val].setStatus(turn);
+		tiles[x][val].reDraw("bb.png");
+		computerMoveFlag = true;
+		
 		val++;
 		vecChipStatus.set(x, val);
-		System.out.println("Computer is placing chip on X: "+x+"Y: "+y);
-		tiles[x][y].setStatus(turn);
-		tiles[x][y].reDraw("bb.png");
-		computerMoveFlag = true;
+		System.out.println("Chip status on column "+x+": "+val);
+		
 		return;
 	}
 	
-	private void checkLeftDiagonal(int turn,int x, int y,int mode)
+	private void checkLeftDiagonal(int turn,int antiTurn,int x, int y,int mode)
 	{
+		
 		if(x>=2 && y<=2)
 		{
 			if(mode == CHKWINNINGMOVE)
 			{
-				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y+1].getStatus() == turn && tiles[x-2][y+2].getStatus() == turn)
+				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y+1].getStatus() == turn && tiles[x-2][y+2].getStatus() == turn && tiles[x-3][y+3].getStatus() != antiTurn && vecChipStatus.get(x-3) <6)
 				{
-					makeWinningMove(2,x-3,y+3);
+					if(tiles[x-3][y+2].getStatus() != 0)makeWinningMove(2,x-3,y+3,true);
 				}
 			}
 			else
 			{
-				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y+1].getStatus() == turn)
+				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y+1].getStatus() == turn && tiles[x-2][y+2].getStatus() != antiTurn && tiles[x-2][y+2].getStatus() != turn)
 				{
-					makeWinningMove(2,x-2,y+2);
+					if(tiles[x-2][y+1].getStatus() !=0)makeWinningMove(2,x-2,y+2,false);
 				}
 			}
 			
@@ -200,88 +273,88 @@ public class Main extends JFrame{
 		
 	}
 	
-	private void checkStraight(int turn,int x, int y,int mode)
+	private void checkStraight(int turn,int antiTurn,int x, int y,int mode)
 	{
 		if(y<=2)
 		{
 			if(mode == CHKWINNINGMOVE)
 			{
-				if(tiles[x][y].getStatus() == turn &&  tiles[x][y+1].getStatus() == turn && tiles[x][y+2].getStatus() == turn)
+				if(tiles[x][y].getStatus() == turn &&  tiles[x][y+1].getStatus() == turn && tiles[x][y+2].getStatus() == turn && tiles[x][y+3].getStatus() != antiTurn && vecChipStatus.get(x) <6)
 				{
-					makeWinningMove(2,x,y+3);
+					makeWinningMove(2,x,y+3,true);
 				}
 			}
 			else
 			{
-				if(tiles[x][y].getStatus() == turn &&  tiles[x][y+1].getStatus() == turn )
+				if(tiles[x][y].getStatus() == turn &&  tiles[x][y+1].getStatus() == turn && tiles[x][y+2].getStatus() != antiTurn && tiles[x][y+2].getStatus() != turn)
 				{
-					makeWinningMove(2,x,y+2);
+					makeWinningMove(2,x,y+2,false);
 				}
 			}
 			
 		}
 	}
 	
-	private void checkRightDiagonal(int turn,int x, int y,int mode)
+	private void checkRightDiagonal(int turn,int antiTurn,int x, int y,int mode)
 	{
 		if( x <=3 &&y<=3)
 		{
 			if(mode == CHKWINNINGMOVE)
 			{
-				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y+1].getStatus() == turn && tiles[x+2][y+2].getStatus() == turn)
+				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y+1].getStatus() == turn && tiles[x+2][y+2].getStatus() == turn && tiles[x+3][y+3].getStatus() != antiTurn && vecChipStatus.get(x+3) <6)
 				{
-					makeWinningMove(2,x+3,y+3);
+					if(tiles[x+3][y+2].getStatus() != 0)makeWinningMove(2,x+3,y+3,true);
 				}
 			}
 			else
 			{
-				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y+1].getStatus() == turn)
+				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y+1].getStatus() == turn && tiles[x+2][y+2].getStatus() != antiTurn && tiles[x+2][y+2].getStatus() != turn)
 				{
-					makeWinningMove(2,x+2,y+2);
+					if(tiles[x+2][y+1].getStatus() !=0)makeWinningMove(2,x+2,y+2,false);
 				}
 			}
 			
 		}
 	}
 	
-	private void checkHorizontalLeft(int turn,int x, int y, int mode)
+	private void checkHorizontalLeft(int turn,int antiTurn,int x, int y, int mode)
 	{
 		if( x >=3)
 		{
 			if(mode == CHKWINNINGMOVE)
 			{
-				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y].getStatus() == turn && tiles[x-2][y].getStatus() == turn)
+				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y].getStatus() == turn && tiles[x-2][y].getStatus() == turn && tiles[x-3][y].getStatus() != antiTurn && vecChipStatus.get(x-3) <6)
 				{
-					makeWinningMove(2,x-3,y);
+					makeWinningMove(2,x-3,y,true);
 				}
 			}
 			else
 			{
-				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y].getStatus() == turn)
+				if(tiles[x][y].getStatus() == turn &&  tiles[x-1][y].getStatus() == turn && tiles[x-2][y].getStatus() != antiTurn && tiles[x-2][y].getStatus() != turn)
 				{
-					makeWinningMove(2,x-2,y);
+					makeWinningMove(2,x-2,y,false);
 				}
 			}
 			
 		}
 	}
 	
-	private void checkHorizontalRight(int turn,int x, int y, int mode)
+	private void checkHorizontalRight(int turn,int antiTurn,int x, int y, int mode)
 	{
-		if( y<=2)
+		if( x<=2)
 		{
 			if(mode == CHKWINNINGMOVE)
 			{
-				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y].getStatus() == turn && tiles[x+2][y].getStatus() == turn)
+				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y].getStatus() == turn && tiles[x+2][y].getStatus() == turn && tiles[x+3][y].getStatus() != antiTurn && vecChipStatus.get(x+3) <6)
 				{
-					makeWinningMove(2,x+3,y);
+					makeWinningMove(2,x+3,y,true);
 				}
 			}
 			else
 			{
-				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y].getStatus() == turn)
+				if(tiles[x][y].getStatus() == turn &&  tiles[x+1][y].getStatus() == turn && tiles[x+2][y].getStatus() != antiTurn && tiles[x+2][y].getStatus() != turn)
 				{
-					makeWinningMove(2,x+2,y);
+					makeWinningMove(2,x+2,y,false);
 				}
 			}
 			
